@@ -42,7 +42,6 @@ class FictionBookParser implements BookParserInterface
         $this->crawler = new Crawler($file->getContents());
         $this->collectData();
 
-
         $data = new ParsedData();
         $data->setTitle($this->getBookTitle())
             ->setEdition(1)

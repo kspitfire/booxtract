@@ -100,4 +100,9 @@ class BookDataService
 
         return $name;
     }
+
+    private function sanitizeString(string $str): string
+    {
+
+    }
 }
