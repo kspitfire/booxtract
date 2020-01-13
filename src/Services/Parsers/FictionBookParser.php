@@ -39,7 +39,9 @@ class FictionBookParser implements BookParserInterface
     public function parse(SplFileInfo $file): ParsedData
     {
         $this->collectedData['file-name'] = $file->getFilename();
-        $this->crawler = new Crawler($file->getContents());
+        $this->crawler = new Crawler();
+        $this->crawler->addXmlContent($file->getContents());
+        $this->collectedData = [];
         $this->collectData();
 
         $data = new ParsedData();

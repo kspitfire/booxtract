@@ -103,7 +103,7 @@ class ProcessBooksCommand extends Command
             $newFilename = $this->service->getProperFileName($data, 'fb2');
 
             if ($output->isVerbose()) {
-                $output->writeln(sprintf('Suggested filename: <comment>%s</comment>', $newFilename));
+                $output->writeln(sprintf('Suggested filename (%d): <comment>%s</comment>', strlen($newFilename), $newFilename));
             }
         }
 

@@ -8,6 +8,18 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class BookDataService
 {
+    const RESTRICTED_CHUNKS = [
+        '[litres]', '«', '»', '"'
+    ];
+
+    const REPLACERS = [
+        '[' => '(',
+        ']' => ')',
+        '—' => '-',
+        '−' => '-',
+        '–' => '-',
+    ];
+
     /**
      * @var BookParserInterface
      */
@@ -61,6 +73,7 @@ class BookDataService
 
         foreach ($authorData as $i => $item) {
             if ($i > 1) {
+                $author = rtrim(rtrim($author), ',');
                 $author .= ' и др.';
                 break;
             }
@@ -82,7 +95,7 @@ class BookDataService
             }
         }
 
-        $name .= sprintf('%s - %s', $author, $data->getTitle());
+        $name .= sprintf('%s - %s', $author, $this->sanitizeString($data->getTitle()));
 
         if (1 !== $data->getEdition()) {
             if (BookLangUtils::LANG_RU !== $data->getLanguage()) {
@@ -103,6 +116,16 @@ class BookDataService
 
     private function sanitizeString(string $str): string
     {
+        $replaced = $str;
 
+        foreach (self::RESTRICTED_CHUNKS as $chunk) {
+            $replaced = str_replace($chunk, '', $replaced);
+        }
+
+        foreach (self::REPLACERS as $target => $replace) {
+            $replaced = str_replace($target, $replace, $replaced);
+        }
+
+        return trim($replaced);
     }
 }
