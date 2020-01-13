@@ -8,6 +8,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -50,8 +51,9 @@ class ProcessBooksCommand extends Command
     {
         $this
             ->setDescription('Analyze files')
-            ->addOption('path', 'p', InputOption::VALUE_REQUIRED, 'Path to analyze')
-            ->addOption('dry-run', 'd', InputOption::VALUE_NONE, 'This will simulate cleaning and show you what would happen')
+            ->addOption('path', 'p', InputOption::VALUE_REQUIRED, 'Path to analyze ebook files')
+            ->addOption('manual', 'm', InputOption::VALUE_NONE, 'Asks every file for renaming, shows suggested file name for every file')
+            ->addOption('dry-run', 'd', InputOption::VALUE_NONE, 'All collected book data will be shown, files will not be renamed')
         ;
     }
 
@@ -103,7 +105,29 @@ class ProcessBooksCommand extends Command
             $newFilename = $this->service->getProperFileName($data, 'fb2');
 
             if ($output->isVerbose()) {
-                $output->writeln(sprintf('Suggested filename (%d): <comment>%s</comment>', strlen($newFilename), $newFilename));
+                $output->writeln(sprintf('Suggested filename: <comment>%s</comment>', $newFilename));
+            }
+
+            if (false === $input->getOption('dry-run')) {
+                if ($file->getFilename() !== $newFilename) {
+                    if ($output->isVerbose()) {
+                        $output->write(sprintf('Renaming %s to %s ...', $file->getFilename(), $newFilename));
+                    }
+
+                    try {
+                        $this->fs->rename($file->getRealPath(), sprintf('%s/%s', $file->getPath(), $newFilename));
+
+                        if ($output->isVerbose()) {
+                            $output->writeln(' OK');
+                        }
+                    } catch (IOException $IOException) {
+                        $output->writeln(sprintf('<error>Could not rename %s, skipping</error>', $file->getFilename()));
+                    }
+                } else {
+                    if ($output->isVerbose()) {
+                        $output->writeln('File has the proper name');
+                    }
+                }
             }
         }
 
