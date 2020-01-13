@@ -3,11 +3,13 @@
 namespace Booxtract\Console;
 
 use Booxtract\Services\BookDataService;
+use Booxtract\Services\Parsers\BookParserInterface;
 use Booxtract\Services\Parsers\FictionBookParser;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -82,12 +84,18 @@ class ProcessBooksCommand extends Command
 
     private function processFb2(InputInterface $input, OutputInterface $output)
     {
+        $parser = new FictionBookParser();
+        $this->process($parser, $input, $output);
+    }
+
+    private function process(BookParserInterface $parser, InputInterface $input, OutputInterface $output)
+    {
         if ($output->isVerbose()) {
             $output->writeln(sprintf('Starting FB2 processing ... '));
         }
 
-        $files = $this->finder->name(FictionBookParser::FILE_MASK)->files()->in($input->getOption('path'));
-        $this->service->setParser(new FictionBookParser());
+        $this->service->setParser($parser);
+        $files = $this->finder->name($parser::FILE_MASK)->files()->in($input->getOption('path'));
 
         if ($output->isVerbose()) {
             $output->writeln(sprintf('Found FB2 file(s): <info>%d</info>', $files->count()));
@@ -110,18 +118,31 @@ class ProcessBooksCommand extends Command
 
             if (false === $input->getOption('dry-run')) {
                 if ($file->getFilename() !== $newFilename) {
-                    if ($output->isVerbose()) {
-                        $output->write(sprintf('Renaming %s to %s ...', $file->getFilename(), $newFilename));
+                    $approvedRenaming = true;
+
+                    if (true === $input->getOption('manual')) {
+                        $io = new SymfonyStyle($input, $output);
+                        $confirmMsg = (false === $output->isVerbose())
+                            ? sprintf('Rename "<comment>%s</comment>" to "<comment>%s</comment>"?', $file->getFilename(), $newFilename)
+                            : 'Rename?';
+                        $approvedRenaming = $io->confirm($confirmMsg, true);
                     }
 
-                    try {
-                        $this->fs->rename($file->getRealPath(), sprintf('%s/%s', $file->getPath(), $newFilename));
-
+                    if (true === $approvedRenaming) {
                         if ($output->isVerbose()) {
-                            $output->writeln(' OK');
+                            $output->write(sprintf('Renaming %s to %s ...', $file->getFilename(), $newFilename));
                         }
-                    } catch (IOException $IOException) {
-                        $output->writeln(sprintf('<error>Could not rename %s, skipping</error>', $file->getFilename()));
+
+                        try {
+                            $this->fs->rename($file->getRealPath(), sprintf('%s/%s', $file->getPath(), $newFilename));
+
+                            if ($output->isVerbose()) {
+                                $output->writeln(' OK');
+                            }
+                        } catch (IOException $IOException) {
+                            $output->writeln('');
+                            $output->writeln(sprintf('<error>Could not rename %s, skipping</error>', $file->getFilename()));
+                        }
                     }
                 } else {
                     if ($output->isVerbose()) {
