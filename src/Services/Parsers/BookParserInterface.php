@@ -6,14 +6,14 @@ use Booxtract\DataObjects\ParsedData;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Этот интерфейс определяет, как должен выглядеть парсер метаданных.
+ * This interface describes how all ebooks parsers should looks like.
  */
 interface BookParserInterface
 {
     /**
-     * Парсер метаданных книги из файла.
+     * Parse metadata from ebook file.
      *
-     * @param SplFileInfo $file Файл электронной книги
+     * @param SplFileInfo $file File
      *
      * @return ParsedData
      */

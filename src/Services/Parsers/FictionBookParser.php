@@ -9,12 +9,12 @@ use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Парсер метаданных для формата fb2.
+ * FictionBook metadata parser..
  */
 class FictionBookParser implements BookParserInterface
 {
     /**
-     * Маска для поиска файла.
+     * Files searching mask.
      */
     const FILE_MASK = '*.fb2';
 
@@ -102,6 +102,11 @@ class FictionBookParser implements BookParserInterface
         return $matrix['fiction'] > $matrix['nonfiction'];
     }
 
+    /**
+     * Get book title.
+     *
+     * @return string
+     */
     private function getBookTitle(): string
     {
         $titles = [];
@@ -170,6 +175,9 @@ class FictionBookParser implements BookParserInterface
         return $finalDate;
     }
 
+    /**
+     * Collects metadata.
+     */
     private function collectData()
     {
         $this->crawler->children()->each(function (Crawler $crawler) {
@@ -257,6 +265,13 @@ class FictionBookParser implements BookParserInterface
         });
     }
 
+    /**
+     * Helper method to collect person's metadata.
+     *
+     * @param Crawler $nodes Node list
+     *
+     * @return BookPersonData
+     */
     private function collectPersonData(Crawler $nodes): BookPersonData
     {
         $person = new BookPersonData();

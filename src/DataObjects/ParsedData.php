@@ -2,6 +2,9 @@
 
 namespace Booxtract\DataObjects;
 
+/**
+ * Ebook metadata data object.
+ */
 class ParsedData
 {
     /**

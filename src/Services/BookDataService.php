@@ -6,13 +6,22 @@ use Booxtract\DataObjects\ParsedData;
 use Booxtract\Services\Parsers\BookParserInterface;
 use Symfony\Component\Finder\SplFileInfo;
 
+/**
+ * Main service for ebooks processing.
+ */
 class BookDataService
 {
+    /**
+     * Chunks to clean from file name.
+     */
     const RESTRICTED_CHUNKS = [
         '[litres]', '«', '»', '"', '…', '#',
         '“', '”'
     ];
 
+    /**
+     * Map for replacing unsafe symbols for file naming.
+     */
     const REPLACERS = [
         '[' => '(',
         ']' => ')',
@@ -36,9 +45,9 @@ class BookDataService
     }
 
     /**
-     * Парсит данные о книге из файла.
+     * Parses ebook metadata using set up parser.
      *
-     * @param SplFileInfo $file Файл электронной книге
+     * @param SplFileInfo $file File
      *
      * @return ParsedData
      *
@@ -54,10 +63,10 @@ class BookDataService
     }
 
     /**
-     * Возвращает правильное название файла.
+     * Construct proper file name.
      *
-     * @param ParsedData $data      Метаданные книги
-     * @param string     $extension Расширение файла
+     * @param ParsedData $data      Ebook metadata
+     * @param string     $extension File extension
      *
      * @return string
      */
@@ -116,6 +125,13 @@ class BookDataService
         return $name;
     }
 
+    /**
+     * Sanitizes string from all symbols not allowed for file naming and other junk chunks.
+     *
+     * @param string $str String to sanitize
+     *
+     * @return string
+     */
     private function sanitizeString(string $str): string
     {
         $replaced = $str;

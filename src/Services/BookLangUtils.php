@@ -2,6 +2,9 @@
 
 namespace Booxtract\Services;
 
+/**
+ * Helper class for naming languages.
+ */
 class BookLangUtils
 {
     const LANG_RU = 'ru';
@@ -31,8 +34,15 @@ class BookLangUtils
         self::LANG_PL => self::TITLE_PL,
     ];
 
+    /**
+     * Checks is current russian language is old-fashioned or not.
+     *
+     * @param string $sample Text sample
+     *
+     * @return string
+     */
     public static function checkIsOldRussian(string $sample): string
     {
-        return (mb_substr_count(mb_strtolower($sample), 'ѣ') > 2) ? self::TITLE_OLD_RU : '';
+        return mb_substr_count(mb_strtolower($sample), 'ѣ') > 2;
     }
 }

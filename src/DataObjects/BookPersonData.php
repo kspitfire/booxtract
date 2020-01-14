@@ -3,32 +3,34 @@
 namespace Booxtract\DataObjects;
 
 /**
- * Формат данных о человеке.
+ * Person metadata data object.
  */
 class BookPersonData
 {
     /**
-     * Имя
+     * First name.
      *
      * @var string
      */
     private $firstName;
 
     /**
-     * Фамилия
+     * Last name.
      *
      * @var string
      */
     private $lastName;
 
     /**
-     * Отчество
+     * Middle name.
      *
      * @var string
      */
     private $middleName;
 
     /**
+     * Nickname or something else.
+     *
      * @var string
      */
     private $nameAlias;
