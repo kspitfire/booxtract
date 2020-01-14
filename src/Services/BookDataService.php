@@ -9,7 +9,8 @@ use Symfony\Component\Finder\SplFileInfo;
 class BookDataService
 {
     const RESTRICTED_CHUNKS = [
-        '[litres]', '«', '»', '"'
+        '[litres]', '«', '»', '"', '…', '#',
+        '“', '”'
     ];
 
     const REPLACERS = [
@@ -18,6 +19,7 @@ class BookDataService
         '—' => '-',
         '−' => '-',
         '–' => '-',
+        '?' => '.',
     ];
 
     /**

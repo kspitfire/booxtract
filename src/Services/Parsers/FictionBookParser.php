@@ -45,6 +45,7 @@ class FictionBookParser implements BookParserInterface
         $this->collectData();
 
         $data = new ParsedData();
+        $data->setIsFiction($this->getIsFiction());
         $data->setTitle($this->getBookTitle())
             ->setEdition(1)
             ->setIssueDate($this->getIssueDate())
@@ -64,6 +65,41 @@ class FictionBookParser implements BookParserInterface
         }
 
         return $data;
+    }
+
+    /**
+     * Detects, is current book a fiction or not (not by default).
+     *
+     * @return bool
+     */
+    private function getIsFiction(): bool
+    {
+        $matrix = [
+            'fiction' => 0,
+            'nonfiction' => 0,
+        ];
+
+        if (false === empty($this->collectedData['title-info']['genre'])) {
+            foreach ($this->collectedData['title-info']['genre'] as $genre) {
+                $detectFiction = preg_match_all("/prose|detective|thriller|sf_|horror|dramaturgy|det_|humor|^story|child|poetry|adventure/", $genre);
+
+                if (true === empty($detectFiction)) {
+                    $checkAdv = preg_match_all("/adv_/", $genre);
+
+                    if (false === empty($checkAdv) && !strpos(mb_strtolower($genre), 'adv_geo') && !strpos(mb_strtolower($genre), 'adv_animal')) {
+                        $detectFiction = true;
+                    }
+                }
+
+                if (false === empty($detectFiction)) {
+                    $matrix['fiction'] += 1;
+                } else {
+                    $matrix['nonfiction'] += 1;
+                }
+            }
+        }
+
+        return $matrix['fiction'] > $matrix['nonfiction'];
     }
 
     private function getBookTitle(): string
@@ -94,6 +130,11 @@ class FictionBookParser implements BookParserInterface
         return !empty($titles[0]) ? $titles[0] : '';
     }
 
+    /**
+     * Return issue date, if collected.
+     *
+     * @return string|null
+     */
     private function getIssueDate(): ?string
     {
         $dates = [];
@@ -106,7 +147,27 @@ class FictionBookParser implements BookParserInterface
             $dates[] = $this->collectedData['title-info']['year'];
         }
 
-        return !empty($dates[0]) ? $dates[0]: null;
+        $finalDate = null;
+
+        foreach ($dates as $date) {
+            if (false === empty($date)) {
+                // not ony year case
+                if (strlen($date) > 4) {
+                    try {
+                        $dateTime = new \DateTime($date);
+                        $finalDate = $dateTime->format('Y');
+                    } catch (\Exception $ex) {}
+                } else {
+                    $finalDate = $date;
+                }
+
+                if (false === empty($finalDate)) {
+                    break;
+                }
+            }
+        }
+
+        return $finalDate;
     }
 
     private function collectData()
