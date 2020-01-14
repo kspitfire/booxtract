@@ -106,7 +106,11 @@ class BookDataService
             }
         }
 
-        $name .= sprintf('%s - %s', $author, $this->sanitizeString($data->getTitle()));
+        if (false === empty($author)) {
+            $name .= sprintf('%s - %s', $author, $this->sanitizeString($data->getTitle()));
+        } else {
+            $name .= $this->sanitizeString($data->getTitle());
+        }
 
         if (1 !== $data->getEdition()) {
             if (BookLangUtils::LANG_RU !== $data->getLanguage()) {
