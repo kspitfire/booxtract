@@ -45,7 +45,13 @@ class FictionBookParser implements BookParserInterface
         $this->collectData();
 
         $data = new ParsedData();
-        $data->setIsFiction($this->getIsFiction());
+        $isFiction = $this->getIsFiction();
+        $data->setIsFiction($isFiction);
+
+        if (true === $isFiction) {
+            $data->setIsPoetry($this->getIsPoetry());
+        }
+
         $data->setTitle($this->getBookTitle())
             ->setEdition(1)
             ->setIssueDate($this->getIssueDate())
@@ -108,6 +114,24 @@ class FictionBookParser implements BookParserInterface
         }
 
         return $matrix['fiction'] > $matrix['nonfiction'];
+    }
+
+    /**
+     * Detects is current book is a poetry book.
+     *
+     * @return bool
+     */
+    private function getIsPoetry(): bool
+    {
+        if (false === empty($this->collectedData['title-info']['genre'])) {
+            foreach ($this->collectedData['title-info']['genre'] as $genre) {
+                if (false === empty(preg_match_all("/poetry/", $genre))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
