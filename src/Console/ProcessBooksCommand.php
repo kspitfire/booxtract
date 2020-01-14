@@ -84,21 +84,21 @@ class ProcessBooksCommand extends Command
 
     private function processFb2(InputInterface $input, OutputInterface $output)
     {
+        if ($output->isVerbose()) {
+            $output->writeln(sprintf('Starting FB2 processing ... '));
+        }
+
         $parser = new FictionBookParser();
         $this->process($parser, $input, $output);
     }
 
     private function process(BookParserInterface $parser, InputInterface $input, OutputInterface $output)
     {
-        if ($output->isVerbose()) {
-            $output->writeln(sprintf('Starting FB2 processing ... '));
-        }
-
         $this->service->setParser($parser);
         $files = $this->finder->name($parser::FILE_MASK)->files()->in($input->getOption('path'));
 
         if ($output->isVerbose()) {
-            $output->writeln(sprintf('Found FB2 file(s): <info>%d</info>', $files->count()));
+            $output->writeln(sprintf('Found file(s): <info>%d</info>', $files->count()));
             $output->writeln('');
         }
 
