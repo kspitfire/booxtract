@@ -52,10 +52,18 @@ class FictionBookParser implements BookParserInterface
             ->setLanguage(!empty($this->collectedData['title-info']['lang']) ? $this->collectedData['title-info']['lang'] : BookLangUtils::LANG_RU)
             ->setPublisherName(!empty($this->collectedData['publish-info']['publisher']) ? $this->collectedData['publish-info']['publisher'] : null)
             ->setCity(!empty($this->collectedData['publish-info']['city']) ? $this->collectedData['publish-info']['city'] : null)
-            ->setIsbn(!empty($this->collectedData['publish-info']['isbn']) ? $this->collectedData['publish-info']['isbn'] : null);
+            ->setIsbn(!empty($this->collectedData['publish-info']['isbn']) ? $this->collectedData['publish-info']['isbn'] : null)
+            ->setOriginLanguage(!empty($this->collectedData['title-info']['src-lang']) ? $this->collectedData['title-info']['src-lang'] : null)
+            ->setOriginTitle(!empty($this->collectedData['src-title-info']['book-title']) ? $this->collectedData['src-title-info']['book-title'] : null);
 
         foreach ($this->collectedData['title-info']['author'] as $author) {
             $data->setAuthor($author);
+        }
+
+        if (false === empty($this->collectedData['src-title-info']['author'])) {
+            foreach ($this->collectedData['src-title-info']['author'] as $author) {
+                $data->setOriginAuthor($author);
+            }
         }
 
         if (false === empty($this->collectedData['title-info']['translator'])) {
@@ -148,8 +156,8 @@ class FictionBookParser implements BookParserInterface
             $dates[] = $this->collectedData['publish-info']['year'];
         }
 
-        if (false === empty($this->collectedData['title-info']['year'])) {
-            $dates[] = $this->collectedData['title-info']['year'];
+        if (false === empty($this->collectedData['title-info']['date'])) {
+            $dates[] = $this->collectedData['title-info']['date'];
         }
 
         $finalDate = null;

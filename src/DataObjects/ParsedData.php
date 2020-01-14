@@ -107,7 +107,7 @@ class ParsedData
         $this->isFiction = false;
         $this->isPoetry = false;
         $this->isCompilation = false;
-        $this->totalParts = 0;
+        $this->totalParts = 1;
     }
 
     public function getTitle(): string
@@ -285,7 +285,7 @@ class ParsedData
         return $this->originAuthors;
     }
 
-    public function setOriginAuthors(?BookPersonData $author): self
+    public function setOriginAuthor(?BookPersonData $author): self
     {
         if (false === empty($author)) {
             $this->originAuthors[] = $author;
