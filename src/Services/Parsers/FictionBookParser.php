@@ -45,22 +45,6 @@ class FictionBookParser implements BookParserInterface
         $this->collectData();
 
         $data = new ParsedData();
-        $isFiction = $this->getIsFiction();
-        $data->setIsFiction($isFiction);
-
-        if (true === $isFiction) {
-            $data->setIsPoetry($this->getIsPoetry());
-        }
-
-        $data->setTitle($this->getBookTitle())
-            ->setEdition(1)
-            ->setIssueDate($this->getIssueDate())
-            ->setLanguage(!empty($this->collectedData['title-info']['lang']) ? $this->collectedData['title-info']['lang'] : BookLangUtils::LANG_RU)
-            ->setPublisherName(!empty($this->collectedData['publish-info']['publisher']) ? $this->collectedData['publish-info']['publisher'] : null)
-            ->setCity(!empty($this->collectedData['publish-info']['city']) ? $this->collectedData['publish-info']['city'] : null)
-            ->setIsbn(!empty($this->collectedData['publish-info']['isbn']) ? $this->collectedData['publish-info']['isbn'] : null)
-            ->setOriginLanguage(!empty($this->collectedData['title-info']['src-lang']) ? $this->collectedData['title-info']['src-lang'] : null)
-            ->setOriginTitle(!empty($this->collectedData['src-title-info']['book-title']) ? $this->collectedData['src-title-info']['book-title'] : null);
 
         foreach ($this->collectedData['title-info']['author'] as $author) {
             $data->setAuthor($author);
@@ -77,6 +61,29 @@ class FictionBookParser implements BookParserInterface
                 $data->setTranslator($translator);
             }
         }
+
+        $isFiction = $this->getIsFiction();
+        $data->setIsFiction($isFiction);
+
+        if (true === $isFiction) {
+            $data->setIsPoetry($this->getIsPoetry());
+        }
+
+        $titlesData = $this->processTitles($data->getAuthors());
+
+        if (false === empty($titlesData['subtitle'])) {
+            $data->setSubtitle($titlesData['subtitle']);
+        }
+
+        $data->setTitle($titlesData['title'])
+            ->setEdition(1)
+            ->setIssueDate($this->getIssueDate())
+            ->setLanguage(!empty($this->collectedData['title-info']['lang']) ? $this->collectedData['title-info']['lang'] : BookLangUtils::LANG_RU)
+            ->setPublisherName(!empty($this->collectedData['publish-info']['publisher']) ? $this->collectedData['publish-info']['publisher'] : null)
+            ->setCity(!empty($this->collectedData['publish-info']['city']) ? $this->collectedData['publish-info']['city'] : null)
+            ->setIsbn(!empty($this->collectedData['publish-info']['isbn']) ? $this->collectedData['publish-info']['isbn'] : null)
+            ->setOriginLanguage(!empty($this->collectedData['title-info']['src-lang']) ? $this->collectedData['title-info']['src-lang'] : null)
+            ->setOriginTitle(!empty($this->collectedData['src-title-info']['book-title']) ? $this->collectedData['src-title-info']['book-title'] : null);
 
         return $data;
     }
@@ -135,36 +142,245 @@ class FictionBookParser implements BookParserInterface
     }
 
     /**
-     * Get book title.
+     * Analyzes collected data and trying to split subtitle and title of the book.
+     *
+     * @param array $authorData Authors data
+     *
+     * @return array ['title' => (string), 'subtitle' => (string)]
+     */
+    private function processTitles(array $authorData): array
+    {
+        $output = [];
+        $selected = [];
+
+        if (false === empty($this->collectedData['title-info']['book-title'])) {
+            $title = $this->collectedData['title-info']['book-title'];
+            $title = str_replace('[', '(', $title);
+            $title = str_replace(']', ')', $title);
+            $output['title-info'] = $this->splitTitle($title);
+        }
+
+        if (false === empty($this->collectedData['publish-info']['book-name'])) {
+            $title = $this->collectedData['publish-info']['book-name'];
+            $title = str_replace('[', '(', $title);
+            $title = str_replace(']', ')', $title);
+            $output['publish-info'] = $this->splitTitle($title);
+        }
+
+        if (false === empty($this->collectedData['src-title-info']['book-title'])) {
+            $title = $this->collectedData['src-title-info']['book-title'];
+            $title = str_replace('[', '(', $title);
+            $title = str_replace(']', ')', $title);
+            $output['src-title-info'] = $this->splitTitle($title);
+        }
+
+        // naming logics
+
+        foreach ($output['title-info'] as $item) {
+            $selected['title'] = $item['title'];
+
+            if (false === empty($item['subtitle'])) {
+                $selected['subtitle'] = $item['subtitle'];
+                break;
+            }
+        }
+
+        if (true === empty($selected) || true === empty($selected['subtitle'])) {
+            if (false === empty($output['publish-info'])) {
+                foreach ($output['publish-info'] as $item) {
+                    if (false === empty($item['subtitle'])
+                        && !$this->isBibliographyDescription($item['title'])
+                        && !$this->isBibliographyDescription($item['subtitle'])
+                    ) {
+                        // clean up
+                        $publishSelected = $item;
+
+                        foreach ($item as $key => $quant) {
+                            $chunks = explode('/', $quant);
+
+                            if (count($chunks) > 1) {
+                                $publishSelected[$key] = trim($chunks[0]);
+                            }
+                        }
+
+                        // check for author
+                        /** @var BookPersonData $author */
+                        foreach ($authorData as $author) {
+                            $publishSelected['title'] = $this->cleanAuthorNameFromTitle($publishSelected['title'], $author);
+                            $publishSelected['subtitle'] = $this->cleanAuthorNameFromTitle($publishSelected['subtitle'], $author);
+                        }
+
+                        break;
+                    }
+                }
+
+                if (false === empty($publishSelected['title'])) {
+                    if (false === isset($selected['title']) && strlen($publishSelected['title']) > 2) {
+                        $selected['title'] = $publishSelected['title'];
+                    }
+                }
+
+                // если определили подзаголовок
+                // TODO: проверка на сборник
+                if (false === empty($publishSelected['subtitle']) && strlen(trim($publishSelected['subtitle'])) > 2) {
+                    if (true === isset($selected['title']) && false === mb_strpos($selected['title'], $publishSelected['subtitle'])) {
+                        $position = mb_strpos($publishSelected['subtitle'], $selected['title']);
+
+                        if (false !== $position) {
+                            $subtitle = str_replace($selected['title'], '', $publishSelected['subtitle']);
+                            $subtitle = trim($subtitle, '.');
+                            $subtitle = trim($subtitle, ':');
+                            $selected['subtitle'] = $subtitle;
+                        } else {
+                            $selected['subtitle'] = $publishSelected['subtitle'];
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($selected as &$item) {
+            $item = preg_replace('/^\s+/', '', $item);
+            $item = preg_replace('/\s+$/', '', $item);
+        }
+
+        return $selected;
+    }
+
+    /**
+     * Is given title string a bibliography description.
+     *
+     * @param string $title String
      *
      * @return string
      */
-    private function getBookTitle(): string
+    private function isBibliographyDescription(string $title): string
     {
-        $titles = [];
+        return preg_match('/.\s?—/', $title);
+    }
 
-        // 1. try title-info
-        if (false === empty($this->collectedData['title-info']['book-title'])) {
-            $titles[] = $this->collectedData['title-info']['book-title'];
+    /**
+     * Cleans up authors name from title.
+     *
+     * @param string         $title  Title
+     * @param BookPersonData $author Authors' data
+     *
+     * @return string
+     */
+    private function cleanAuthorNameFromTitle(string $title, BookPersonData $author): string
+    {
+        $found = false;
+        $fullName = sprintf('%s %s %s', $author->getLastName(), $author->getFirstName(), $author->getMiddleName());
+        $shortName = sprintf(
+            '%s %s. %s.',
+            $author->getLastName(),
+            mb_strtoupper(mb_substr($author->getFirstName(), 0, 1)),
+            mb_strtoupper(mb_substr($author->getMiddleName(), 0, 1))
+        );
+
+        if (mb_strpos($title, $fullName)) {
+            $found = true;
+            $title = str_replace($fullName, '', $title);
         }
 
-        // 2. try publish-info
-        if (false === empty($this->collectedData['publish-info']['book-name'])) {
-            $titles[] = $this->collectedData['publish-info']['book-name'];
+        if (mb_strpos($title, $shortName)) {
+            $found = true;
+            $title = str_replace($shortName, '', $title);
         }
 
-        // 3. try src-title-info
-        if (true === empty($titles) && false === empty($this->collectedData['src-title-info']['book-title'])) {
-            $titles[] = $this->collectedData['src-title-info']['book-title'];
+        if (false === $found) {
+            $title = str_replace($author->getLastName(), '', $title);
+            $title = str_replace($author->getFirstName(), '', $title);
         }
 
-        // 4. try filename (TODO)
+        return trim($title);
+    }
 
-        // TODO: compare titles and choose the best (criteria?)
-        // TODO: subtract subtitle
-        // TODO: cut long titles
+    /**
+     * Trying to split book name for title and subtitle several ways.
+     *
+     * @param string $srcString Books title
+     *
+     * @return array
+     */
+    private function splitTitle(string $srcString): array
+    {
+        $output = [];
 
-        return !empty($titles[0]) ? $titles[0] : '';
+        // 1. try to split by point
+        $output['point'] = $this->explodeTitle($srcString, '.');
+        // 2. try to split by colon / semicolon
+        $output['semicolon'] = $this->explodeTitle($srcString, ';');
+        $output['colon'] = $this->explodeTitle($srcString, ':');
+        // 3. try to split by slash
+        $output['slash'] = $this->explodeTitle($srcString, '/');
+        // 4. try to split by marks (?, !)
+        $output['question'] = $this->explodeTitle($srcString, '?');
+        $output['exclamation'] = $this->explodeTitle($srcString, '!');
+
+        // 5. try to extract from parentheses
+        if (true === empty($output)) {
+            $template = [
+                'title' => $srcString,
+                'subtitle' => '',
+            ];
+
+            $matches = [];
+            preg_match('#\((.*?)\)#', $srcString, $matches);
+
+            if (false === empty($matches) && true === isset($matches[1])) {
+                $template['subtitle'] = $matches[1];
+                $template['title'] = trim(str_replace($matches[0], '', $srcString));
+                $output['parentheses'] = $template;
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Explode string with a given delimiter on two chunks: before the first delimiter and other part.
+     *
+     * @param string $srcString String
+     * @param string $delimiter Delimiter
+     *
+     * @return array
+     */
+    private function explodeTitle(string $srcString, string $delimiter): array
+    {
+        $template = [
+            'title' => '',
+            'subtitle' => '',
+        ];
+
+        $title = $srcString;
+        $subTitle = '';
+        $chunks = explode($delimiter, $srcString);
+
+        if (true === is_array($chunks) && count($chunks) > 1) {
+            $title = $chunks[0];
+
+            foreach ($chunks as $pos => $chunk) {
+                if (0 === $pos) {
+                    continue;
+                }
+
+                if (count($chunks) > 2) {
+                    $subTitle .= sprintf('%s %s', ($pos === 1) ? '' : $delimiter, trim($chunk));
+                } else {
+                    $subTitle .= trim($chunk);
+                }
+            }
+        }
+
+        $template['title'] = $title;
+
+        if (false === empty($subTitle)) {
+            $firstLetter = mb_strtoupper(mb_substr($subTitle, 0, 1));
+            $template['subtitle'] = sprintf('%s%s', $firstLetter, mb_substr($subTitle, 1));
+        }
+
+        return $template;
     }
 
     /**

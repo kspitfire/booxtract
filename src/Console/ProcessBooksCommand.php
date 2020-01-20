@@ -76,7 +76,7 @@ class ProcessBooksCommand extends Command
         try {
             $this->processFb2($input, $output);
         } catch (\Exception $ex) {
-            $output->writeln(sprintf('<error>%s</error>', $ex->getMessage()));
+            $output->writeln(sprintf('<error>%s</error>%sTrace: %s', $ex->getMessage(), "\n", $ex->getTraceAsString()));
         }
 
         return 0;

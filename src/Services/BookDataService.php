@@ -20,6 +20,11 @@ class BookDataService
     ];
 
     /**
+     * Title length limit.
+     */
+    const TITLE_LEN_LIMIT = 150;
+
+    /**
      * Map for replacing unsafe symbols for file naming.
      */
     const REPLACERS = [
@@ -106,10 +111,16 @@ class BookDataService
             }
         }
 
+        $title = $this->sanitizeString($data->getTitle());
+
+        if (false === empty($data->getSubtitle()) && (strlen($data->getTitle()) + strlen($data->getSubtitle())) < self::TITLE_LEN_LIMIT) {
+            $title .= sprintf('. %s', $this->sanitizeString($data->getSubtitle()));
+        }
+
         if (false === empty($author)) {
-            $name .= sprintf('%s - %s', $author, $this->sanitizeString($data->getTitle()));
+            $name .= sprintf('%s - %s', $author, $title);
         } else {
-            $name .= $this->sanitizeString($data->getTitle());
+            $name .= $title;
         }
 
         if (1 !== $data->getEdition()) {
@@ -148,6 +159,8 @@ class BookDataService
             $replaced = str_replace($target, $replace, $replaced);
         }
 
-        return trim($replaced);
+        $replaced = trim($replaced);
+
+        return trim($replaced, '.');
     }
 }
