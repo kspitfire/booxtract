@@ -109,8 +109,13 @@ class ProcessBooksCommand extends Command
                 $output->writeln(sprintf('Parsing metadata from file "%s"', $file->getFilename()));
             }
 
-            $data = $this->service->parse($file);
-            $newFilename = $this->service->getProperFileName($data, 'fb2');
+            try {
+                $data = $this->service->parse($file);
+                $newFilename = $this->service->getProperFileName($data, 'fb2');
+            } catch (\Exception $ex) {
+                $output->writeln(sprintf('<error>Parsing exception (this file will be skipped) </error>: %s', $ex->getMessage()));
+                continue;
+            }
 
             if ($output->isVerbose()) {
                 $output->writeln(sprintf('Suggested filename: <comment>%s</comment>', $newFilename));

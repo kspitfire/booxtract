@@ -9,7 +9,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * FictionBook metadata parser..
+ * FictionBook metadata parser.
  */
 class FictionBookParser implements BookParserInterface
 {
@@ -78,7 +78,7 @@ class FictionBookParser implements BookParserInterface
         $data->setTitle($titlesData['title'])
             ->setEdition(1)
             ->setIssueDate($this->getIssueDate())
-            ->setLanguage(!empty($this->collectedData['title-info']['lang']) ? $this->collectedData['title-info']['lang'] : BookLangUtils::LANG_RU)
+            ->setLanguage(!empty($this->collectedData['title-info']['lang']) ? mb_strtolower($this->collectedData['title-info']['lang']) : BookLangUtils::LANG_RU)
             ->setPublisherName(!empty($this->collectedData['publish-info']['publisher']) ? $this->collectedData['publish-info']['publisher'] : null)
             ->setCity(!empty($this->collectedData['publish-info']['city']) ? $this->collectedData['publish-info']['city'] : null)
             ->setIsbn(!empty($this->collectedData['publish-info']['isbn']) ? $this->collectedData['publish-info']['isbn'] : null)
@@ -151,37 +151,45 @@ class FictionBookParser implements BookParserInterface
     private function processTitles(array $authorData): array
     {
         $output = [];
-        $selected = [];
+        $selected = ['title' => '', 'subtitle' => ''];
 
-        if (false === empty($this->collectedData['title-info']['book-title'])) {
-            $title = $this->collectedData['title-info']['book-title'];
-            $title = str_replace('[', '(', $title);
-            $title = str_replace(']', ')', $title);
-            $output['title-info'] = $this->splitTitle($title);
+        if (true === isset($this->collectedData['title-info'])) {
+            if (false === empty($this->collectedData['title-info']['book-title'])) {
+                $title = $this->collectedData['title-info']['book-title'];
+                $title = str_replace('[', '(', $title);
+                $title = str_replace(']', ')', $title);
+                $output['title-info'] = $this->splitTitle($title);
+            }
         }
 
-        if (false === empty($this->collectedData['publish-info']['book-name'])) {
-            $title = $this->collectedData['publish-info']['book-name'];
-            $title = str_replace('[', '(', $title);
-            $title = str_replace(']', ')', $title);
-            $output['publish-info'] = $this->splitTitle($title);
+        if (true === isset($this->collectedData['publish-info'])) {
+            if (false === empty($this->collectedData['publish-info']['book-name'])) {
+                $title = $this->collectedData['publish-info']['book-name'];
+                $title = str_replace('[', '(', $title);
+                $title = str_replace(']', ')', $title);
+                $output['publish-info'] = $this->splitTitle($title);
+            }
         }
 
-        if (false === empty($this->collectedData['src-title-info']['book-title'])) {
-            $title = $this->collectedData['src-title-info']['book-title'];
-            $title = str_replace('[', '(', $title);
-            $title = str_replace(']', ')', $title);
-            $output['src-title-info'] = $this->splitTitle($title);
+        if (true === isset($this->collectedData['src-title-info'])) {
+            if (false === empty($this->collectedData['src-title-info']['book-title'])) {
+                $title = $this->collectedData['src-title-info']['book-title'];
+                $title = str_replace('[', '(', $title);
+                $title = str_replace(']', ')', $title);
+                $output['src-title-info'] = $this->splitTitle($title);
+            }
         }
 
         // naming logics
 
-        foreach ($output['title-info'] as $item) {
-            $selected['title'] = $item['title'];
+        if (true === isset($output['title-info'])) {
+            foreach ($output['title-info'] as $item) {
+                $selected['title'] = $item['title'];
 
-            if (false === empty($item['subtitle'])) {
-                $selected['subtitle'] = $item['subtitle'];
-                break;
+                if (false === empty($item['subtitle'])) {
+                    $selected['subtitle'] = $item['subtitle'];
+                    break;
+                }
             }
         }
 
