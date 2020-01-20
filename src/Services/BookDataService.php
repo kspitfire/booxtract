@@ -22,7 +22,7 @@ class BookDataService
     /**
      * Title length limit.
      */
-    const TITLE_LEN_LIMIT = 150;
+    const TITLE_LEN_LIMIT = 180;
 
     /**
      * Map for replacing unsafe symbols for file naming.
