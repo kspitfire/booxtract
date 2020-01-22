@@ -26,7 +26,7 @@ class BookLangUtils
 
     const LANG_MAP = [
         self::LANG_RU => '',
-        'ru-RU' => '',
+        'ru-ru' => '',
         self::LANG_EN => self::TITLE_EN,
         self::LANG_FR => self::TITLE_FR,
         self::LANG_UK => self::TITLE_UK,
