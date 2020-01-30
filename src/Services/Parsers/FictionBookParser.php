@@ -205,8 +205,8 @@ class FictionBookParser implements BookParserInterface
             if (false === empty($output['publish-info'])) {
                 foreach ($output['publish-info'] as $item) {
                     if (false === empty($item['subtitle'])
-                        && !$this->isBibliographyDescription($item['title'])
-                        && !$this->isBibliographyDescription($item['subtitle'])
+                        && false === $this->isBibliographyDescription($item['title'])
+                        && false === $this->isBibliographyDescription($item['subtitle'])
                     ) {
                         // clean up
                         $publishSelected = $item;
@@ -231,7 +231,7 @@ class FictionBookParser implements BookParserInterface
                 }
 
                 if (false === empty($publishSelected['title'])) {
-                    if (false === isset($selected['title']) && strlen($publishSelected['title']) > 2) {
+                    if (false === isset($selected['title']) && (strlen($publishSelected['title']) > 2)) {
                         $selected['title'] = $publishSelected['title'];
                     }
                 }
@@ -268,11 +268,11 @@ class FictionBookParser implements BookParserInterface
      *
      * @param string $title String
      *
-     * @return string
+     * @return bool
      */
-    private function isBibliographyDescription(string $title): string
+    private function isBibliographyDescription(string $title): bool
     {
-        return preg_match('/.\s?—/', $title);
+        return (bool) preg_match('/.\s?—/', $title);
     }
 
     /**
@@ -402,9 +402,9 @@ class FictionBookParser implements BookParserInterface
     /**
      * Return issue date, if collected.
      *
-     * @return string|null
+     * @return int|null
      */
-    private function getIssueDate(): ?string
+    private function getIssueDate(): ?int
     {
         $dates = [];
 
@@ -424,10 +424,10 @@ class FictionBookParser implements BookParserInterface
                 if (strlen($date) > 4) {
                     try {
                         $dateTime = new \DateTime($date);
-                        $finalDate = $dateTime->format('Y');
+                        $finalDate = (int) $dateTime->format('Y');
                     } catch (\Exception $ex) {}
                 } else {
-                    $finalDate = $date;
+                    $finalDate = (int) $date;
                 }
 
                 if (false === empty($finalDate)) {
