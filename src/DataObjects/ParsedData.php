@@ -18,17 +18,17 @@ class ParsedData
     private $subtitle;
 
     /**
-     * @var []BookPersonData
+     * @var array
      */
     private $authors;
 
     /**
-     * @var []BookPersonData|null
+     * @var array|null
      */
     private $translators;
 
     /**
-     * @var []BookPersonData|null
+     * @var array|null
      */
     private $originAuthors;
 
