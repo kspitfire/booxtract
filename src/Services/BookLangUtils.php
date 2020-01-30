@@ -39,10 +39,10 @@ class BookLangUtils
      *
      * @param string $sample Text sample
      *
-     * @return string
+     * @return bool
      */
-    public static function checkIsOldRussian(string $sample): string
+    public static function checkIsOldRussian(string $sample): bool
     {
-        return mb_substr_count(mb_strtolower($sample), 'ѣ') > 2;
+        return (mb_substr_count(mb_strtolower($sample), 'ѣ') >= 2);
     }
 }
