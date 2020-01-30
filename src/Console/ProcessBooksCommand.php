@@ -95,7 +95,7 @@ class ProcessBooksCommand extends Command
     private function process(BookParserInterface $parser, InputInterface $input, OutputInterface $output)
     {
         $this->service->setParser($parser);
-        $files = $this->finder->name($parser::FILE_MASK)->files()->in($input->getOption('path'));
+        $files = $this->finder->name($parser::getFileMask())->files()->in($input->getOption('path'));
 
         if ($output->isVerbose()) {
             $output->writeln(sprintf('Found file(s): <info>%d</info>', $files->count()));

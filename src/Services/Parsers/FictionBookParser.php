@@ -36,6 +36,14 @@ class FictionBookParser implements BookParserInterface
     /**
      * {@inheritdoc}
      */
+    public static function getFileMask(): string
+    {
+        return self::FILE_MASK;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function parse(SplFileInfo $file): ParsedData
     {
         $this->collectedData['file-name'] = $file->getFilename();

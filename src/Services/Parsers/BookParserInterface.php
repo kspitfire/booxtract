@@ -18,4 +18,11 @@ interface BookParserInterface
      * @return ParsedData
      */
     public function parse(SplFileInfo $file): ParsedData;
+
+    /**
+     * Return file mask of supported files as string.
+     *
+     * @return string
+     */
+    public static function getFileMask(): string;
 }
