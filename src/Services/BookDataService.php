@@ -61,7 +61,7 @@ class BookDataService
     public function parse(SplFileInfo $file): ParsedData
     {
         if (null === $this->parser) {
-            throw new \Exception(sprintf('Book parser did not set'));
+            throw new \Exception('Book parser did not set');
         }
 
         return $this->parser->parse($file);
