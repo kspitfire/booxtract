@@ -39,7 +39,6 @@ class ProcessBooksCommand extends Command
 
     public function __construct(BookDataService $service)
     {
-        $this->finder = new Finder();
         $this->fs = new Filesystem();
         $this->service = $service;
 
@@ -95,7 +94,52 @@ class ProcessBooksCommand extends Command
     private function process(BookParserInterface $parser, InputInterface $input, OutputInterface $output)
     {
         $this->service->setParser($parser);
-        $files = $this->finder->name($parser::getFileMask())->files()->in($input->getOption('path'));
+        $path = $input->getOption('path');
+
+        // unzip zip-archives
+        $zipMask = sprintf('%s.zip', $parser::getFileMask());
+        $this->finder = new Finder();
+        $zips = $this->finder->name($zipMask)->files()->in($path);
+
+        if ($zips->count() > 0) {
+            if ($output->isVerbose()) {
+                $output->writeln(sprintf('Found zip(s): <info>%d</info>', $zips->count()));
+                $output->writeln('');
+            }
+
+            /** @var SplFileInfo $zip */
+            foreach ($zips as $zip) {
+                try {
+                    $archive = new \ZipArchive();
+                    $resource = $archive->open($zip->getRealPath());
+
+                    if (true === $resource) {
+                        $archive->extractTo($zip->getPath());
+                        $archive->close();
+
+                        if ($output->isVerbose()) {
+                            $output->writeln(sprintf('Extracted %s to %s', $zip->getFilename(), $zip->getPath()));
+                        }
+
+                        unlink($zip->getRealPath());
+                    } else {
+                        if ($output->isVerbose()) {
+                            $output->writeln(sprintf('<error>Cannot open zip archive: %s, skipping</error>', $zip->getFilename()));
+                        }
+                    }
+                } catch (\Exception $ex) {
+                    $output->writeln(sprintf(
+                        '<error>Error while processing archives: %s,%sTrace: %s</error>',
+                        $ex->getMessage(),
+                        "\n",
+                        $ex->getTraceAsString(),
+                    ));
+                }
+            }
+        }
+
+        $this->finder = new Finder();
+        $files = $this->finder->name($parser::getFileMask())->files()->in($path);
 
         if ($output->isVerbose()) {
             $output->writeln(sprintf('Found file(s): <info>%d</info>', $files->count()));
