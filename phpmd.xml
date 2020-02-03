@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<ruleset name="Booxtract project"
+         xmlns="http://pmd.sf.net/ruleset/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0
+                     http://pmd.sf.net/ruleset_xml_schema.xsd"
+         xsi:noNamespaceSchemaLocation="
+                     http://pmd.sf.net/ruleset_xml_schema.xsd">
+    <description>
+        Booxtract project PHPMD rule set
+    </description>
+
+    <!-- Import controversial -->
+    <rule ref="rulesets/controversial.xml" />
+    <!-- End controversial -->
+
+    <!-- Import codesize -->
+    <rule ref="rulesets/codesize.xml/CyclomaticComplexity">
+        <properties>
+            <property name="reportLevel" value="12" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml/NPathComplexity">
+        <properties>
+            <property name="minimum" value="200" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml/ExcessiveMethodLength">
+        <properties>
+            <property name="minimum" value="150" />
+            <property name="ignore-whitespace" value="true" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml/ExcessiveClassLength">
+        <properties>
+            <property name="minimum" value="1000" />
+            <property name="ignore-whitespace" value="true" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml/ExcessiveClassComplexity">
+        <properties>
+            <property name="maximum" value="80" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml/ExcessiveParameterList" />
+    <rule ref="rulesets/codesize.xml/TooManyFields" />
+    <rule ref="rulesets/codesize.xml/TooManyMethods">
+        <properties>
+            <property name="maxmethods" value="10" />
+            <property name="ignorepattern" value="(^(set|get))i" />
+        </properties>
+    </rule>
+    <!-- End codesize -->
+
+    <!-- Import design -->
+    <rule ref="rulesets/design.xml" />
+    <!-- End design -->
+
+    <!-- Import unusedcode -->
+    <rule ref="rulesets/unusedcode.xml" />
+    <!-- End unusedcode -->
+
+    <!-- Import naming -->
+    <rule ref="rulesets/naming.xml">
+        <exclude name="ShortVariable" />
+        <exclude name="LongVariable" />
+        <exclude name="BooleanGetMethodName" />
+    </rule>
+    <!-- End naming -->
+</ruleset>
