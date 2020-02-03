@@ -16,7 +16,7 @@ class BookDataService
      */
     const RESTRICTED_CHUNKS = [
         '[litres]', '«', '»', '"', '…', '#',
-        '“', '”'
+        '“', '”',
     ];
 
     /**
@@ -41,9 +41,6 @@ class BookDataService
      */
     private $parser;
 
-    /**
-     * @param BookParserInterface $parser
-     */
     public function setParser(BookParserInterface $parser): void
     {
         $this->parser = $parser;
@@ -53,8 +50,6 @@ class BookDataService
      * Parses ebook metadata using set up parser.
      *
      * @param SplFileInfo $file File
-     *
-     * @return ParsedData
      *
      * @throws \Exception
      */
@@ -72,15 +67,13 @@ class BookDataService
      *
      * @param ParsedData $data      Ebook metadata
      * @param string     $extension File extension
-     *
-     * @return string
      */
     public function getProperFileName(ParsedData $data, string $extension): string
     {
         $name = '';
         // TODO: check old russian
 
-        if ($data->getLanguage() !== BookLangUtils::LANG_RU) {
+        if (BookLangUtils::LANG_RU !== $data->getLanguage()) {
             $name .= sprintf('%s ', BookLangUtils::LANG_MAP[$data->getLanguage()]);
         }
 
@@ -106,14 +99,14 @@ class BookDataService
                 $author .= sprintf('%s.', mb_strtoupper(mb_substr($item->getMiddleName(), 0, 1)));
             }
 
-            if (count($authorData) >= 2 && $i < (count($authorData) - 1)) {
+            if (\count($authorData) >= 2 && $i < (\count($authorData) - 1)) {
                 $author .= ', ';
             }
         }
 
         $title = $this->sanitizeString($data->getTitle());
 
-        if (false === empty($data->getSubtitle()) && (strlen($data->getTitle()) + strlen($data->getSubtitle())) < self::TITLE_LEN_LIMIT) {
+        if (false === empty($data->getSubtitle()) && (\mb_strlen($data->getTitle()) + \mb_strlen($data->getSubtitle())) < self::TITLE_LEN_LIMIT) {
             $title .= sprintf('. %s', $this->sanitizeString($data->getSubtitle()));
         }
 
@@ -144,8 +137,6 @@ class BookDataService
      * Sanitizes string from all symbols not allowed for file naming and other junk chunks.
      *
      * @param string $str String to sanitize
-     *
-     * @return string
      */
     private function sanitizeString(string $str): string
     {

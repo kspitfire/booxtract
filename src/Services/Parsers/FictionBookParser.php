@@ -98,8 +98,6 @@ class FictionBookParser implements BookParserInterface
 
     /**
      * Detects, is current book a fiction or not (not by default).
-     *
-     * @return bool
      */
     private function getIsFiction(): bool
     {
@@ -110,20 +108,20 @@ class FictionBookParser implements BookParserInterface
 
         if (false === empty($this->collectedData['title-info']['genre'])) {
             foreach ($this->collectedData['title-info']['genre'] as $genre) {
-                $detectFiction = preg_match_all("/prose|detective|thriller|sf_|horror|dramaturgy|det_|humor|^story|child|poetry|adventure/", $genre);
+                $detectFiction = preg_match_all('/prose|detective|thriller|sf_|horror|dramaturgy|det_|humor|^story|child|poetry|adventure/', $genre);
 
                 if (true === empty($detectFiction)) {
-                    $checkAdv = preg_match_all("/adv_/", $genre);
+                    $checkAdv = preg_match_all('/adv_/', $genre);
 
-                    if (false === empty($checkAdv) && !strpos(mb_strtolower($genre), 'adv_geo') && !strpos(mb_strtolower($genre), 'adv_animal')) {
+                    if (false === empty($checkAdv) && !mb_strpos(mb_strtolower($genre), 'adv_geo') && !mb_strpos(mb_strtolower($genre), 'adv_animal')) {
                         $detectFiction = true;
                     }
                 }
 
                 if (false === empty($detectFiction)) {
-                    $matrix['fiction'] += 1;
+                    ++$matrix['fiction'];
                 } else {
-                    $matrix['nonfiction'] += 1;
+                    ++$matrix['nonfiction'];
                 }
             }
         }
@@ -133,14 +131,12 @@ class FictionBookParser implements BookParserInterface
 
     /**
      * Detects is current book is a poetry book.
-     *
-     * @return bool
      */
     private function getIsPoetry(): bool
     {
         if (false === empty($this->collectedData['title-info']['genre'])) {
             foreach ($this->collectedData['title-info']['genre'] as $genre) {
-                if (false === empty(preg_match_all("/poetry/", $genre))) {
+                if (false === empty(preg_match_all('/poetry/', $genre))) {
                     return true;
                 }
             }
@@ -214,7 +210,7 @@ class FictionBookParser implements BookParserInterface
                         foreach ($item as $key => $quant) {
                             $chunks = explode('/', $quant);
 
-                            if (count($chunks) > 1) {
+                            if (\count($chunks) > 1) {
                                 $publishSelected[$key] = trim($chunks[0]);
                             }
                         }
@@ -231,14 +227,14 @@ class FictionBookParser implements BookParserInterface
                 }
 
                 if (false === empty($publishSelected['title'])) {
-                    if (false === isset($selected['title']) && (strlen($publishSelected['title']) > 2)) {
+                    if (false === isset($selected['title']) && (\mb_strlen($publishSelected['title']) > 2)) {
                         $selected['title'] = $publishSelected['title'];
                     }
                 }
 
                 // если определили подзаголовок
                 // TODO: проверка на сборник
-                if (false === empty($publishSelected['subtitle']) && strlen(trim($publishSelected['subtitle'])) > 2) {
+                if (false === empty($publishSelected['subtitle']) && \mb_strlen(trim($publishSelected['subtitle'])) > 2) {
                     if (true === isset($selected['title']) && false === mb_strpos($selected['title'], $publishSelected['subtitle'])) {
                         $position = mb_strpos($publishSelected['subtitle'], $selected['title']);
 
@@ -267,8 +263,6 @@ class FictionBookParser implements BookParserInterface
      * Is given title string a bibliography description.
      *
      * @param string $title String
-     *
-     * @return bool
      */
     private function isBibliographyDescription(string $title): bool
     {
@@ -280,8 +274,6 @@ class FictionBookParser implements BookParserInterface
      *
      * @param string         $title  Title
      * @param BookPersonData $author Authors' data
-     *
-     * @return string
      */
     private function cleanAuthorNameFromTitle(string $title, BookPersonData $author): string
     {
@@ -316,8 +308,6 @@ class FictionBookParser implements BookParserInterface
      * Trying to split book name for title and subtitle several ways.
      *
      * @param string $srcString Books title
-     *
-     * @return array
      */
     private function splitTitle(string $srcString): array
     {
@@ -359,8 +349,6 @@ class FictionBookParser implements BookParserInterface
      *
      * @param string $srcString String
      * @param string $delimiter Delimiter
-     *
-     * @return array
      */
     private function explodeTitle(string $srcString, string $delimiter): array
     {
@@ -373,7 +361,7 @@ class FictionBookParser implements BookParserInterface
         $subTitle = '';
         $chunks = explode($delimiter, $srcString);
 
-        if (true === is_array($chunks) && count($chunks) > 1) {
+        if (true === \is_array($chunks) && \count($chunks) > 1) {
             $title = $chunks[0];
 
             foreach ($chunks as $pos => $chunk) {
@@ -381,8 +369,8 @@ class FictionBookParser implements BookParserInterface
                     continue;
                 }
 
-                if (count($chunks) > 2) {
-                    $subTitle .= sprintf('%s %s', ($pos === 1) ? '' : $delimiter, trim($chunk));
+                if (\count($chunks) > 2) {
+                    $subTitle .= sprintf('%s %s', (1 === $pos) ? '' : $delimiter, trim($chunk));
                 } else {
                     $subTitle .= trim($chunk);
                 }
@@ -401,8 +389,6 @@ class FictionBookParser implements BookParserInterface
 
     /**
      * Return issue date, if collected.
-     *
-     * @return int|null
      */
     private function getIssueDate(): ?int
     {
@@ -421,11 +407,12 @@ class FictionBookParser implements BookParserInterface
         foreach ($dates as $date) {
             if (false === empty($date)) {
                 // not ony year case
-                if (strlen($date) > 4) {
+                if (\mb_strlen($date) > 4) {
                     try {
                         $dateTime = new \DateTime($date);
                         $finalDate = (int) $dateTime->format('Y');
-                    } catch (\Exception $ex) {}
+                    } catch (\Exception $ex) {
+                    }
                 } else {
                     $finalDate = (int) $date;
                 }
@@ -445,11 +432,10 @@ class FictionBookParser implements BookParserInterface
     private function collectData()
     {
         $this->crawler->children()->each(function (Crawler $crawler) {
-            if ($crawler->nodeName() === 'description') {
+            if ('description' === $crawler->nodeName()) {
                 $crawler->children()->each(function (Crawler $child) {
-
                     // title-info
-                    if ($child->nodeName() === 'title-info') {
+                    if ('title-info' === $child->nodeName()) {
                         $authors = [];
                         $translators = [];
 
@@ -461,7 +447,7 @@ class FictionBookParser implements BookParserInterface
                                 case 'src-lang':
                                 case 'date':
                                 case 'book-title':
-                                    if (false === empty($chunk->text())){
+                                    if (false === empty($chunk->text())) {
                                         $this->collectedData['title-info'][$key] = $chunk->text();
                                     }
                                     break;
@@ -484,7 +470,7 @@ class FictionBookParser implements BookParserInterface
                     }
 
                     // src-title-info
-                    if ($child->nodeName() === 'src-title-info') {
+                    if ('src-title-info' === $child->nodeName()) {
                         $authors = [];
 
                         $child->children()->each(function (Crawler $chunk) use (&$authors) {
@@ -507,7 +493,7 @@ class FictionBookParser implements BookParserInterface
                     }
 
                     // publish-info
-                    if ($child->nodeName() === 'publish-info') {
+                    if ('publish-info' === $child->nodeName()) {
                         $child->children()->each(function (Crawler $chunk) {
                             $key = $chunk->nodeName();
 
@@ -533,8 +519,6 @@ class FictionBookParser implements BookParserInterface
      * Helper method to collect person's metadata.
      *
      * @param Crawler $nodes Node list
-     *
-     * @return BookPersonData
      */
     private function collectPersonData(Crawler $nodes): BookPersonData
     {

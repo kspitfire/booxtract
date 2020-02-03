@@ -65,6 +65,7 @@ class ProcessBooksCommand extends Command
     {
         if (true === empty($input->getOption('path'))) {
             $output->writeln('<error>Path has not been specified</error>');
+
             return 1;
         }
 

@@ -38,11 +38,9 @@ class BookLangUtils
      * Checks is current russian language is old-fashioned or not.
      *
      * @param string $sample Text sample
-     *
-     * @return bool
      */
     public static function checkIsOldRussian(string $sample): bool
     {
-        return (mb_substr_count(mb_strtolower($sample), 'ѣ') >= 2);
+        return mb_substr_count(mb_strtolower($sample), 'ѣ') >= 2;
     }
 }
