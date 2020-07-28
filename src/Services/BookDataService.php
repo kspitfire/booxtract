@@ -106,7 +106,7 @@ class BookDataService
 
         $title = $this->sanitizeString($data->getTitle());
 
-        if (false === empty($data->getSubtitle()) && (\mb_strlen($data->getTitle()) + \mb_strlen($data->getSubtitle())) < self::TITLE_LEN_LIMIT) {
+        if (false === empty($data->getSubtitle()) && (mb_strlen($data->getTitle()) + mb_strlen($data->getSubtitle())) < self::TITLE_LEN_LIMIT) {
             $title .= sprintf('. %s', $this->sanitizeString($data->getSubtitle()));
         }
 

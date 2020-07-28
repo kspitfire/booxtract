@@ -227,14 +227,14 @@ class FictionBookParser implements BookParserInterface
                 }
 
                 if (false === empty($publishSelected['title'])) {
-                    if (false === isset($selected['title']) && (\mb_strlen($publishSelected['title']) > 2)) {
+                    if (false === isset($selected['title']) && (mb_strlen($publishSelected['title']) > 2)) {
                         $selected['title'] = $publishSelected['title'];
                     }
                 }
 
                 // если определили подзаголовок
                 // TODO: проверка на сборник
-                if (false === empty($publishSelected['subtitle']) && \mb_strlen(trim($publishSelected['subtitle'])) > 2) {
+                if (false === empty($publishSelected['subtitle']) && mb_strlen(trim($publishSelected['subtitle'])) > 2) {
                     if (true === isset($selected['title']) && false === mb_strpos($selected['title'], $publishSelected['subtitle'])) {
                         $position = mb_strpos($publishSelected['subtitle'], $selected['title']);
 
@@ -407,7 +407,7 @@ class FictionBookParser implements BookParserInterface
         foreach ($dates as $date) {
             if (false === empty($date)) {
                 // not ony year case
-                if (\mb_strlen($date) > 4) {
+                if (mb_strlen($date) > 4) {
                     try {
                         $dateTime = new \DateTime($date);
                         $finalDate = (int) $dateTime->format('Y');

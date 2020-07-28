@@ -5,6 +5,7 @@
         "php": "^7.2.5",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-mbstring": "*",
         "ext-zip": "*",
         "symfony/console": "5.0.*",
         "symfony/dom-crawler": "5.0.*",
