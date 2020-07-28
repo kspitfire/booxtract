@@ -1,6 +1,15 @@
 include .env
 export
 
+install:
+	cp .env.dist .env
+	docker exec composer composer install --dev --no-interaction -o
+.PHONY: install
+
+update:
+	docker exec composer composer update
+.PHONY: update
+
 fixer:
 	docker exec composer /app/bin/php-cs-fixer fix --dry-run --diff
 .PHONY: fixer
