@@ -3,7 +3,7 @@ export
 
 install:
 	cp .env.dist .env
-	docker exec composer composer install --dev --no-interaction -o
+	docker-compose up
 .PHONY: install
 
 update:
