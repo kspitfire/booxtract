@@ -133,7 +133,7 @@ class ProcessBooksCommand extends Command
                         '<error>Error while processing archives: %s,%sTrace: %s</error>',
                         $ex->getMessage(),
                         "\n",
-                        $ex->getTraceAsString(),
+                        $ex->getTraceAsString()
                     ));
                 }
             }

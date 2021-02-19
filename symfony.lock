@@ -36,7 +36,7 @@
         "version": "2.7.1"
     },
     "php": {
-        "version": "7.3"
+        "version": "7.2"
     },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
@@ -142,6 +142,9 @@
             "src/Controller/.gitignore",
             "src/Kernel.php"
         ]
+    },
+    "symfony/http-client-contracts": {
+        "version": "v2.3.1"
     },
     "symfony/http-foundation": {
         "version": "v5.0.2"

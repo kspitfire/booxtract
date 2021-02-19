@@ -1,9 +1,0 @@
-version: "3"
-services:
-  composer:
-    image: composer:latest
-    container_name: composer
-    restart: always
-    volumes:
-      - ./:/app
-    command: composer install --dev --no-interaction -o

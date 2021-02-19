@@ -1,43 +1,54 @@
+$(shell if [ ! -f .env ]; then cp .env.dist .env; echo ".env was successfully created"; fi;)
 include .env
 export
 
-install:
-	cp .env.dist .env
-	docker-compose up
-.PHONY: install
+EXEC=docker run --rm -v ${PWD}:/app -it booxtract
+CONSOLE=bin/console
 
-update:
-	docker exec composer composer update
+build:
+	docker build . -t booxtract
+.PHONY: build
+
+check: build
+	$(EXEC) composer --version
+.PHONY: check
+
+update: build
+	$(EXEC) composer update
 .PHONY: update
 
-fixer:
-	docker exec composer /app/bin/php-cs-fixer fix --dry-run --diff
+install: build
+	$(EXEC) composer install -o --no-interaction
+.PHONY: install
+
+fixer: build
+	$(EXEC) /app/bin/php-cs-fixer fix --dry-run --diff
 .PHONY: fixer
 
-fix:
-	docker exec composer /app/bin/php-cs-fixer fix
+fix: build
+	$(EXEC) /app/bin/php-cs-fixer fix
 .PHONY: fix
 
-phpmd:
-	docker exec composer /app/phpmd src/ text phpmd.xml
+phpmd: build
+	$(EXEC) /app/bin/phpmd src/ text phpmd.xml
 .PHONY: phpmd
 
-phpstan:
-	docker exec composer /app/bin/phpstan analyse -l 5 -c phpstan.neon src/
+phpstan: build
+	$(EXEC) /app/bin/phpstan analyse -l 5 -c phpstan.neon src/
 .PHONY: phpstan
 
-process:
-	docker exec composer /app/bin/console books:process -p $(BOOK_DIR)
+process: build
+	$(EXEC) $(CONSOLE) books:process -p $(BOOK_DIR)
 .PHONY: process
 
-manual:
-	docker exec composer /app/bin/console books:process -m -v -p $(BOOK_DIR)
+manual: build
+	$(EXEC) $(CONSOLE) books:process -m -v -p $(BOOK_DIR)
 .PHONY: manual
 
-dry-run:
-	docker exec composer /app/bin/console books:process -d -v -p $(BOOK_DIR)
+dry-run: build
+	$(EXEC) $(CONSOLE) books:process -d -v -p $(BOOK_DIR)
 .PHONY: dry-run
 
-analyze:
-	docker exec composer /app/bin/console books:process -d -vv -p $(BOOK_DIR)
+analyze: build
+	$(EXEC) $(CONSOLE) books:process -d -vv -p $(BOOK_DIR)
 .PHONY: analyze
