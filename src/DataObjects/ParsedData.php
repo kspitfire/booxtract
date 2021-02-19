@@ -107,6 +107,11 @@ class ParsedData
      */
     private $genres;
 
+    /**
+     * @var string|null
+     */
+    private $series;
+
     public function __construct()
     {
         $this->isFiction = false;
@@ -366,6 +371,18 @@ class ParsedData
         return $this->genres;
     }
 
+    public function setSeries(?string $series): self
+    {
+        $this->series = $series;
+
+        return $this;
+    }
+
+    public function getSeries(): ?string
+    {
+        return $this->series;
+    }
+
     public function getDataAsPrintableString(): string
     {
         $printableString = '';
@@ -389,6 +406,10 @@ class ParsedData
 
         if (!empty($this->getPublisherName())) {
             $printableString .= sprintf('<comment>Publisher:</comment> <info>%s</info>%s', $this->getPublisherName(), \PHP_EOL);
+        }
+
+        if (!empty($this->getSeries())) {
+            $printableString .= sprintf('<comment>Series:</comment> <info>%s</info>%s', $this->getSeries(), \PHP_EOL);
         }
 
         if (!empty($this->getIssueDate())) {

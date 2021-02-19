@@ -96,6 +96,7 @@ class FictionBookParser implements BookParserInterface
             ->setPublisherName(!empty($this->collectedData['publish-info']['publisher']) ? $this->collectedData['publish-info']['publisher'] : null)
             ->setCity(!empty($this->collectedData['publish-info']['city']) ? $this->collectedData['publish-info']['city'] : null)
             ->setIsbn(!empty($this->collectedData['publish-info']['isbn']) ? $this->collectedData['publish-info']['isbn'] : null)
+            ->setSeries(!empty($this->collectedData['publish-info']['series']) ? $this->collectedData['publish-info']['series'] : null)
             ->setOriginLanguage(!empty($this->collectedData['title-info']['src-lang']) ? $this->collectedData['title-info']['src-lang'] : null)
             ->setOriginTitle(!empty($this->collectedData['src-title-info']['book-title']) ? $this->collectedData['src-title-info']['book-title'] : null);
 
@@ -511,6 +512,11 @@ class FictionBookParser implements BookParserInterface
                                 case 'isbn':
                                     if (false === empty($chunk->text())) {
                                         $this->collectedData['publish-info'][$key] = $chunk->text();
+                                    }
+                                    break;
+                                case 'sequence':
+                                    if (false === empty($chunk->attr('name'))) {
+                                        $this->collectedData['publish-info']['series'] = $chunk->attr('name');
                                     }
                                     break;
                             }
