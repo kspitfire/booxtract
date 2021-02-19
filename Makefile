@@ -21,9 +21,9 @@ install: build
 	$(EXEC) composer install -o --no-interaction
 .PHONY: install
 
-fixer: build
+cslint: build
 	$(EXEC) /app/bin/php-cs-fixer fix --dry-run --diff
-.PHONY: fixer
+.PHONY: cslint
 
 fix: build
 	$(EXEC) /app/bin/php-cs-fixer fix

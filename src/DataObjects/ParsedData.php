@@ -18,17 +18,17 @@ class ParsedData
     private $subtitle;
 
     /**
-     * @var array
+     * @var BookPersonData[]
      */
     private $authors;
 
     /**
-     * @var array|null
+     * @var BookPersonData[]|null
      */
     private $translators;
 
     /**
-     * @var array|null
+     * @var BookPersonData[]|null
      */
     private $originAuthors;
 
@@ -102,12 +102,18 @@ class ParsedData
      */
     private $totalParts;
 
+    /**
+     * @var string[]
+     */
+    private $genres;
+
     public function __construct()
     {
         $this->isFiction = false;
         $this->isPoetry = false;
         $this->isCompilation = false;
         $this->totalParts = 1;
+        $this->genres = [];
     }
 
     public function getTitle(): string
@@ -134,6 +140,9 @@ class ParsedData
         return $this;
     }
 
+    /**
+     * @return BookPersonData[]
+     */
     public function getAuthors(): array
     {
         return $this->authors;
@@ -146,6 +155,9 @@ class ParsedData
         return $this;
     }
 
+    /**
+     * @return BookPersonData[]|null
+     */
     public function getTranslators(): ?array
     {
         return $this->translators;
@@ -340,5 +352,131 @@ class ParsedData
         $this->isPoetry = $isPoetry;
 
         return $this;
+    }
+
+    public function setGenre(string $genre): self
+    {
+        $this->genres[] = $genre;
+
+        return $this;
+    }
+
+    public function getGenres(): array
+    {
+        return $this->genres;
+    }
+
+    public function getDataAsPrintableString(): string
+    {
+        $printableString = '';
+        $printableString .= sprintf('<comment>Title:</comment> <info>%s</info>%s', $this->getTitle(), \PHP_EOL);
+
+        if (!empty($this->getSubtitle())) {
+            $printableString .= sprintf('<comment>Subitle:</comment> <info>%s</info>%s', $this->getSubtitle(), \PHP_EOL);
+        }
+
+        if (!empty($this->getLanguage())) {
+            $printableString .= sprintf('<comment>Lang:</comment> <info>%s</info>%s', $this->getLanguage(), \PHP_EOL);
+        }
+
+        if (!empty($this->getGenres())) {
+            $printableString .= sprintf('<comment>Genres:</comment> <info>%s</info>%s', implode(', ', $this->getGenres()), \PHP_EOL);
+        }
+
+        if (!empty($this->getCity())) {
+            $printableString .= sprintf('<comment>City:</comment> <info>%s</info>%s', $this->getCity(), \PHP_EOL);
+        }
+
+        if (!empty($this->getPublisherName())) {
+            $printableString .= sprintf('<comment>Publisher:</comment> <info>%s</info>%s', $this->getPublisherName(), \PHP_EOL);
+        }
+
+        if (!empty($this->getIssueDate())) {
+            $printableString .= sprintf('<comment>Year:</comment> <info>%s</info>%s', $this->getIssueDate(), \PHP_EOL);
+        }
+
+        if (!empty($this->getEdition())) {
+            $printableString .= sprintf('<comment>Edition:</comment> <info>%d</info>%s', $this->getEdition(), \PHP_EOL);
+        }
+
+        if (!empty($this->getIsbn())) {
+            $printableString .= sprintf('<comment>ISBN:</comment> <info>%s</info>%s', $this->getIsbn(), \PHP_EOL);
+        }
+
+        if (!empty($this->isFiction())) {
+            $printableString .= sprintf('<comment>Is Fiction:</comment> <info>%s</info>%s', $this->isFiction() ? 'Yes' : 'No', \PHP_EOL);
+        }
+
+        if (!empty($this->isCompilation())) {
+            $printableString .= sprintf('<comment>Is Compilation:</comment> <info>%s</info>%s', $this->isCompilation() ? 'Yes' : 'No', \PHP_EOL);
+        }
+
+        if (!empty($this->isPoetry())) {
+            $printableString .= sprintf('<comment>Is Poetry:</comment> <info>%s</info>%s', $this->isPoetry() ? 'Yes' : 'No', \PHP_EOL);
+        }
+
+        if ($this->getTotalParts() > 1) {
+            $printableString .= sprintf('<comment>Total parts:</comment> <info>%d</info>%s', $this->getTotalParts(), \PHP_EOL);
+        }
+
+        if (!empty($this->getOriginTitle())) {
+            $printableString .= sprintf('<comment>Title (origin):</comment> <info>%s</info>%s', $this->getOriginTitle(), \PHP_EOL);
+        }
+
+        if (!empty($this->getOriginSubtitle())) {
+            $printableString .= sprintf('<comment>Subtitle (origin):</comment> <info>%s</info>%s', $this->getOriginSubtitle(), \PHP_EOL);
+        }
+
+        if (!empty($this->getOriginIssueDate())) {
+            $printableString .= sprintf('<comment>Year (origin):</comment> <info>%s</info>%s', $this->getOriginIssueDate(), \PHP_EOL);
+        }
+
+        if (!empty($this->getOriginLanguage())) {
+            $printableString .= sprintf('<comment>Lang (origin):</comment> <info>%s</info>%s', $this->getOriginLanguage(), \PHP_EOL);
+        }
+
+        if (!empty($this->getAuthors())) {
+            $printableString .= '<comment>Authors:</comment>'.\PHP_EOL;
+
+            foreach ($this->getAuthors() as $key => $author) {
+                $printableString .= sprintf(
+                    "%s)\tSurname: <info>%s</info>\tName: <info>%s</info>\tPatronymic: <info>%s</info>",
+                    '<comment>'.($key + 1).'</comment>',
+                    $author->getLastName().\PHP_EOL,
+                    $author->getFirstName().\PHP_EOL,
+                    $author->getMiddleName().\PHP_EOL.\PHP_EOL
+                );
+            }
+        }
+
+        if (!empty($this->getOriginAuthors())) {
+            $printableString .= '<comment>Authors (origin):</comment>'.\PHP_EOL;
+
+            foreach ($this->getOriginAuthors() as $key => $author) {
+                $printableString .= sprintf(
+                    "%s)\tSurname: <info>%s</info>\tName: <info>%s</info>\tPatronymic: <info>%s</info>",
+                    '<comment>'.($key + 1).'</comment>',
+                    $author->getLastName().\PHP_EOL,
+                    $author->getFirstName().\PHP_EOL,
+                    $author->getMiddleName().\PHP_EOL.\PHP_EOL
+                );
+            }
+        }
+
+        if (!empty($this->getTranslators())) {
+            $printableString .= '<comment>Translators:</comment>'.\PHP_EOL;
+
+            foreach ($this->getTranslators() as $key => $author) {
+                $printableString .= sprintf(
+                    "%s)\tSurname: <info>%s</info>\tName: <info>%s</info>\tPatronymic: <info>%s</info>",
+                    '<comment>'.($key + 1).'</comment>',
+                    $author->getLastName().\PHP_EOL,
+                    $author->getFirstName().\PHP_EOL,
+                    $author->getMiddleName().\PHP_EOL.\PHP_EOL
+                );
+            }
+        }
+
+        return $printableString;
     }
 }

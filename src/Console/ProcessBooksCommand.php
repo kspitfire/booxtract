@@ -85,7 +85,7 @@ class ProcessBooksCommand extends Command
     private function processFb2(InputInterface $input, OutputInterface $output)
     {
         if ($output->isVerbose()) {
-            $output->writeln(sprintf('Starting FB2 processing ... '));
+            $output->writeln('Starting FB2 processing ... ');
         }
 
         $parser = new FictionBookParser();
@@ -164,6 +164,15 @@ class ProcessBooksCommand extends Command
 
             if ($output->isVerbose()) {
                 $output->writeln(sprintf('Suggested filename: <comment>%s</comment>', $newFilename));
+
+                if ($output->isVeryVerbose()) {
+                    $output->writeln(sprintf(
+                        'Book metadata: %s----------%s%s',
+                        \PHP_EOL,
+                        \PHP_EOL,
+                        $data->getDataAsPrintableString()
+                    ));
+                }
             }
 
             if (false === $input->getOption('dry-run')) {

@@ -70,6 +70,12 @@ class FictionBookParser implements BookParserInterface
             }
         }
 
+        if (false === empty($this->collectedData['title-info']['genre'])) {
+            foreach ($this->collectedData['title-info']['genre'] as $genre) {
+                $data->setGenre($genre);
+            }
+        }
+
         $isFiction = $this->getIsFiction();
         $data->setIsFiction($isFiction);
 
