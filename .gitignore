@@ -13,5 +13,5 @@
 /.php_cs.cache
 ###< friendsofphp/php-cs-fixer ###
 /bin/*
-/test/*
-!/test/.gitkeep
+/books/*
+!/books/.gitkeep
