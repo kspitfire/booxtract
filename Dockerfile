@@ -1,7 +1,7 @@
-FROM php:7.2-cli-alpine
+FROM php:7.3-cli-alpine
 
 RUN apk update \
-    && apk add ${PHPIZE_DEPS} bash git zlib-dev \
+    && apk add ${PHPIZE_DEPS} bash git libzip-dev zlib-dev \
     && docker-php-ext-install -j$(nproc) iconv zip mbstring \
     && apk del ${PHPIZE_DEPS} \
     && rm -frv /var/cache/apk/*
